@@ -10,5 +10,5 @@ To run the server:
 To run this:
 1. `cd socket-io-client-example`
 2. `npm start`
-3. It will now be running on `http://localhost:3000/`
+3. It will now be running on `http://localhost:3000/`  
 You can open multiple tabs to test multiple players.

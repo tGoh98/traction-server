@@ -17,6 +17,22 @@ export default class Room {
   addMember(newMember) {
     this.members.push(newMember);
   }
+  
+  joinTeam(name, teamName) {
+    // Delete from old team
+    for (const team in this.teams) {
+      if (this.teams[team].includes(name)) {
+        let i = this.teams[team].indexOf(name);
+        if (i > -1) {
+          this.teams[team].splice(i, 1);
+        }
+        break;
+      }
+    }
+
+    // Add to new team
+    this.teams[teamName].push(name);
+  }
 
   /**
    * 

@@ -33,6 +33,10 @@ app.get('/getState', (req, res) => {
   res.send(state)
 });
 
+function showRoomState() {
+  console.log(`Rooms: \n${JSON.stringify(rooms)}`);
+}
+
 // Socket
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -51,7 +55,7 @@ io.on('connection', (socket) => {
     rooms[roomCode].teams['red'].push(name);
 
     console.log(`Created room ${roomCode} and added user ${name}`);
-    console.log(`Rooms: \n${JSON.stringify(rooms)}`);
+    showRoomState();
   });
 
   // Join room
@@ -67,7 +71,7 @@ io.on('connection', (socket) => {
       io.to(roomCode).emit('room updated', rooms[roomCode].teams);
 
       console.log(`Joined room ${roomCode} and updated teams`);
-      console.log(`Rooms: \n${JSON.stringify(rooms)}`);
+      showRoomState();
     }
   });
 
@@ -93,7 +97,13 @@ io.on('connection', (socket) => {
       delete rooms[roomCode];
     }
 
-    console.log(`Rooms: \n${JSON.stringify(rooms)}`);
+    showRoomState();
+  });
+
+  // Join team
+  socket.on('join team', (roomCode, name, teamName) => {
+    rooms[roomCode].joinTeam(name, teamName);
+    showRoomState();
   });
 
   // socket.on('update score', () => {

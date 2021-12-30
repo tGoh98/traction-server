@@ -43,7 +43,7 @@ function App() {
     });
 
     return () => socket.disconnect();
-  }, []);
+  }, []); // IMPORTANT: DON'T ADD THE MISSING DEPENDENCIES HERE
 
   // Emit event to the server
   // const scored = () => {
@@ -60,6 +60,10 @@ function App() {
   
   const leaveRoom = () => {
     socket.emit('leave room', room, name, teamName);
+  }
+  
+  const joinTeam = (newTeam) => () => {
+    socket.emit('join team', room, name, newTeam);
   }
 
   return (
@@ -80,6 +84,11 @@ function App() {
       <button onClick={joinRoom}>Join room</button>
       <br />
       <button onClick={leaveRoom}>Leave room</button>
+      <br />
+      <button onClick={joinTeam('red')}>Join red team</button>
+      <button onClick={joinTeam('blue')}>Join blue team</button>
+      <button onClick={joinTeam('green')}>Join green team</button>
+      <br />
     </>
   );
 }
