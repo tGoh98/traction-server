@@ -21,7 +21,7 @@ const io = new Server(server, {
 app.use(cors(corsOptions));
 
 // Game state
-const state = { 'score' : 0 };
+// const state = { 'score' : 0 };
 const rooms = {};
 
 // Routes
@@ -42,19 +42,64 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 
-  // New room
+  // Create room
   socket.on('create room', (name) => {
     let roomCode = Room.getNewCode(Object.keys(rooms));
     socket.join(roomCode);
     io.to(roomCode).emit('room code', roomCode);
-    rooms.roomCode = new Room(roomCode, name);
+    rooms[roomCode] = new Room(roomCode, name);
+    rooms[roomCode].teams['red'].push(name);
+
     console.log(`Created room ${roomCode} and added user ${name}`);
+    console.log(`Rooms: \n${JSON.stringify(rooms)}`);
   });
 
-  socket.on('update score', () => {
-    state.score++;
-    io.emit('update score', state.score);
+  // Join room
+  socket.on('join room', (roomCode, name) => {
+    if (!Object.keys(rooms).includes(roomCode)) {
+      socket.emit('invalid room');
+    } else if (rooms[roomCode].members.includes(name)) {
+      socket.emit('name exists');
+    } else {
+      socket.join(roomCode);
+      rooms[roomCode].addMember(name);
+      rooms[roomCode].teams['red'].push(name);
+      io.to(roomCode).emit('room updated', rooms[roomCode].teams);
+
+      console.log(`Joined room ${roomCode} and updated teams`);
+      console.log(`Rooms: \n${JSON.stringify(rooms)}`);
+    }
   });
+
+  // Leave room
+  socket.on('leave room', (roomCode, name, teamName) => {
+    let i = rooms[roomCode].members.indexOf(name);
+    if (i > -1) {
+      rooms[roomCode].members.splice(i, 1);
+    }
+
+    let index = rooms[roomCode].teams[teamName].indexOf(name);
+    if (index > -1) {
+      rooms[roomCode].teams[teamName].splice(index, 1);
+    }
+
+    // TODO: need to update order/state too??
+    // perhaps should split team formation and game leave
+
+    socket.leave(roomCode);
+
+    // Delete room if empty
+    if (rooms[roomCode].members.length === 0) {
+      delete rooms[roomCode];
+    }
+
+    console.log(`Rooms: \n${JSON.stringify(rooms)}`);
+  });
+
+  // socket.on('update score', () => {
+  //   state.score++;
+  //   io.emit('update score', state.score);
+  // });
 });
 
 // Start the server!

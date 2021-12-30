@@ -1,52 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ENDPOINT, socket } from './socket'; // import connected socket
+// import axios from 'axios';
+// import { ENDPOINT, socket } from './socket'; // import connected socket
+import { socket } from './socket'; // import connected socket
 
 function App() {
-  const [response, setResponse] = useState(-1);
+  // const [response, setResponse] = useState(-1);
   const [name, setName] = useState("");
+  const [teamName, setTeamName] = useState("red");
+  const [room, setRoom] = useState("");
 
   useEffect(() => {
     // Get the initial state
-    const fetchData = async () => {
-      const result = await axios(
-        `${ENDPOINT}/getState`,
-      );
+    // const fetchData = async () => {
+    //   const result = await axios(
+    //     `${ENDPOINT}/getState`,
+    //   );
 
-      setResponse(result.data.score);
-    };
-    fetchData();
+    //   setResponse(result.data.score);
+    // };
+    // fetchData();
 
+    // socket.on('update score', data => {
+      //   setResponse(data);
+      // });
+      
     // Listen for socket events
-    socket.on('update score', data => {
-      setResponse(data);
+    socket.on('room code', roomCode => {
+      console.log("Created room " + roomCode);
+      setRoom(roomCode);
     });
 
-    socket.on('room code', data => {
-      console.log("Created room " + data);
+    socket.on('room updated', teams => {
+      console.log(`Updated teams: ${JSON.stringify(teams)}`);
+    });
+
+    socket.on('invalid room', () => {
+      console.log(`Cannot join room ${room}: invalid code.`);
+    });
+    
+    socket.on('name exists', () => {
+      console.log(`Cannot join room ${room}: name already exists.`);
     });
 
     return () => socket.disconnect();
   }, []);
 
   // Emit event to the server
-  const scored = () => {
-    socket.emit('update score');
-  }
+  // const scored = () => {
+  //   socket.emit('update score');
+  // }
 
   const createRoom = () => {
     socket.emit('create room', name);
   }
 
+  const joinRoom = () => {
+    socket.emit('join room', room, name);
+  }
+  
+  const leaveRoom = () => {
+    socket.emit('leave room', room, name, teamName);
+  }
+
   return (
     <>
       <p>
-        Score: { response }
-        <br />
+        {/* Score: { response }
+        <br /> */}
         Name: <input type="text" name="name" onChange={event => setName(event.target.value)} />
+        <br />
+        Room code: <input type="text" name="roomCode" onChange={event => setRoom(event.target.value)} />
+        <br />
+        Team name: <input type="text" name="teamName" onChange={event => setTeamName(event.target.value)} />
       </p>
-      <button onClick={scored}>Scored!</button>
+      {/* <button onClick={scored}>Scored!</button>
+      <br /> */}
       <button onClick={createRoom}>Create room</button>
+      <br />
+      <button onClick={joinRoom}>Join room</button>
+      <br />
+      <button onClick={leaveRoom}>Leave room</button>
     </>
   );
 }
