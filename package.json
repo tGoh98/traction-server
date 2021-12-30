@@ -21,5 +21,6 @@
   "bugs": {
     "url": "https://github.com/tGoh98/traction-server/issues"
   },
-  "homepage": "https://github.com/tGoh98/traction-server#readme"
+  "homepage": "https://github.com/tGoh98/traction-server#readme",
+  "type" : "module"
 }

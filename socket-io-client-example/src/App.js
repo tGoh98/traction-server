@@ -4,6 +4,7 @@ import { ENDPOINT, socket } from './socket'; // import connected socket
 
 function App() {
   const [response, setResponse] = useState(-1);
+  const [name, setName] = useState("");
 
   useEffect(() => {
     // Get the initial state
@@ -16,9 +17,13 @@ function App() {
     };
     fetchData();
 
-    // Connect to the socket
+    // Listen for socket events
     socket.on('update score', data => {
       setResponse(data);
+    });
+
+    socket.on('room code', data => {
+      console.log("Created room " + data);
     });
 
     return () => socket.disconnect();
@@ -29,12 +34,19 @@ function App() {
     socket.emit('update score');
   }
 
+  const createRoom = () => {
+    socket.emit('create room', name);
+  }
+
   return (
     <>
       <p>
-        The score is {response}
+        Score: { response }
+        <br />
+        Name: <input type="text" name="name" onChange={event => setName(event.target.value)} />
       </p>
       <button onClick={scored}>Scored!</button>
+      <button onClick={createRoom}>Create room</button>
     </>
   );
 }
