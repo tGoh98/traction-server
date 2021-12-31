@@ -63,7 +63,12 @@ function App() {
   }
   
   const joinTeam = (newTeam) => () => {
+    setTeamName(newTeam);
     socket.emit('join team', room, name, newTeam);
+  }
+
+  const startGame = () => {
+    socket.emit('start game', room);
   }
 
   return (
@@ -89,6 +94,7 @@ function App() {
       <button onClick={joinTeam('blue')}>Join blue team</button>
       <button onClick={joinTeam('green')}>Join green team</button>
       <br />
+      <button onClick={startGame}>Start game</button>
     </>
   );
 }

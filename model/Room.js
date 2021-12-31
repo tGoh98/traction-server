@@ -1,3 +1,5 @@
+import State from './State.js';
+
 /**
  * A Room object holds the information for a room
  */
@@ -10,7 +12,6 @@ export default class Room {
       'green' : [],
       'blue' : []
     };
-    this.order = [];
     this.state = {};
   }
 
@@ -18,6 +19,11 @@ export default class Room {
     this.members.push(newMember);
   }
   
+  /**
+   * Moves specified user to a new team
+   * @param name 
+   * @param teamName 
+   */
   joinTeam(name, teamName) {
     // Delete from old team
     for (const team in this.teams) {
@@ -32,6 +38,35 @@ export default class Room {
 
     // Add to new team
     this.teams[teamName].push(name);
+  }
+
+  /**
+   * Reorders members field by alternating teams
+   */
+  setOrder() {
+    // Watch for the case where there are only two teams
+    let bound = Math.max(this.teams['red'].length, this.teams['green'].length);
+    var order = [];
+    
+    for (var i=0; i<bound; i++) {
+      if (i<this.teams['red'].length) {
+        order.push(this.teams['red'][i]);
+      }
+      if (i<this.teams['green'].length) {
+        order.push(this.teams['green'][i]);
+      }
+      if (i<this.teams['blue'].length) {
+        order.push(this.teams['blue'][i]);
+      }
+    }
+    this.members = order;
+  }
+
+  /**
+   * Initializes game state
+   */
+  setState() {
+    this.state = new State(this.members[0], this.members.length);
   }
 
   /**

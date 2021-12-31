@@ -4,6 +4,8 @@ import http from 'http';
 import cors from 'cors';
 import { Server } from 'socket.io';
 import Room from './model/Room.js';
+import { removeElem } from './model/util.js';
+
 
 // CORS
 var corsOptions = {
@@ -29,9 +31,9 @@ app.get('/', (req, res) => {
   res.send('TRACTION SERVER<br/><i>monotonically increasing</i>');
 });
 
-app.get('/getState', (req, res) => {
-  res.send(state)
-});
+// app.get('/getState', (req, res) => {
+//   res.send(state)
+// });
 
 function showRoomState() {
   console.log(`Rooms: \n${JSON.stringify(rooms)}`);
@@ -77,15 +79,8 @@ io.on('connection', (socket) => {
 
   // Leave room
   socket.on('leave room', (roomCode, name, teamName) => {
-    let i = rooms[roomCode].members.indexOf(name);
-    if (i > -1) {
-      rooms[roomCode].members.splice(i, 1);
-    }
-
-    let index = rooms[roomCode].teams[teamName].indexOf(name);
-    if (index > -1) {
-      rooms[roomCode].teams[teamName].splice(index, 1);
-    }
+    rooms[roomCode].members = removeElem(name, rooms[roomCode].members);
+    rooms[roomCode].teams[teamName] = removeElem(name, rooms[roomCode].teams[teamName]);
 
     // TODO: need to update order/state too??
     // perhaps should split team formation and game leave
@@ -103,6 +98,20 @@ io.on('connection', (socket) => {
   // Join team
   socket.on('join team', (roomCode, name, teamName) => {
     rooms[roomCode].joinTeam(name, teamName);
+    showRoomState();
+  });
+
+  // Start game
+  socket.on('start game', (roomCode) => {
+    // Set order
+    rooms[roomCode].setOrder();
+    
+    // Set state
+    rooms[roomCode].setState();
+
+    // Broadcast game updated
+    io.to(roomCode).emit('game updated');
+
     showRoomState();
   });
 
