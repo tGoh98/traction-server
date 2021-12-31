@@ -79,4 +79,39 @@ import { removeElem } from './util.js';
 
     return board;
   }
+
+/**
+ * Removes card from hand
+ * @param {*} index 
+ * @param {*} card 
+ */
+  removeFromHand(index, card) {
+    this.playerHands[index] = removeElem(card, this.playerHands[index]);
+  }
+
+  /**
+   * Places a tile
+   * @param {*} teamName 
+   * @param {*} pos 
+   */
+  placeTile(teamName, pos) {
+    this.board[pos].marked = teamName;
+  }
+
+  /**
+   * Removes a tile
+   * @param {*} pos 
+   */
+  removeTile(pos) {
+    this.board[pos].marked = '';
+  }
+
+  /**
+   * Draws a card
+   * @param {*} index 
+   */
+  drawCard(index) {
+    const newCard = this.deck.pop();
+    this.playerHands[index].push(newCard);
+  }
 }

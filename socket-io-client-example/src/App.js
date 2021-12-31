@@ -8,6 +8,8 @@ function App() {
   const [name, setName] = useState("");
   const [teamName, setTeamName] = useState("red");
   const [room, setRoom] = useState("");
+  const [card, setCard] = useState("");
+  const [pos, setPos] = useState(-1);
 
   useEffect(() => {
     // Get the initial state
@@ -42,6 +44,10 @@ function App() {
       console.log(`Cannot join room ${room}: name already exists.`);
     });
 
+    socket.on('game updated', state => {
+      console.log(`Updated state: ${JSON.stringify(state)}`);
+    });
+
     return () => socket.disconnect();
   }, []); // IMPORTANT: DON'T ADD THE MISSING DEPENDENCIES HERE
 
@@ -71,6 +77,22 @@ function App() {
     socket.emit('start game', room);
   }
 
+  const removeFromHand = () => {
+    socket.emit('remove from hand', room, name, card);
+  }
+
+  const placeTile = () => {
+    socket.emit('place tile', room, teamName, pos);
+  }
+
+  const removeTile = () => {
+    socket.emit('remove tile', room, pos);
+  }
+
+  const drawCard = () => {
+    socket.emit('draw card', room, name);
+  }
+
   return (
     <>
       <p>
@@ -81,6 +103,10 @@ function App() {
         Room code: <input type="text" name="roomCode" onChange={event => setRoom(event.target.value)} />
         <br />
         Team name: <input type="text" name="teamName" onChange={event => setTeamName(event.target.value)} />
+        <br />
+        Card: <input type="text" onChange={event => setCard(event.target.value)} />
+        <br />
+        Position: <input type="text" onChange={event => setPos(event.target.value)} />
       </p>
       {/* <button onClick={scored}>Scored!</button>
       <br /> */}
@@ -95,6 +121,14 @@ function App() {
       <button onClick={joinTeam('green')}>Join green team</button>
       <br />
       <button onClick={startGame}>Start game</button>
+      <br />
+      <button onClick={removeFromHand}>Remove from hand</button>
+      <br />
+      <button onClick={placeTile}>Place tile</button>
+      <br />
+      <button onClick={removeTile}>Remove tile</button>
+      <br />
+      <button onClick={drawCard}>Draw card</button>
     </>
   );
 }

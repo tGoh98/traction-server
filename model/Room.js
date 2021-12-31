@@ -12,6 +12,7 @@ export default class Room {
       'green' : [],
       'blue' : []
     };
+    this.gameStage = 'team';
     this.state = {};
   }
 
@@ -59,6 +60,14 @@ export default class Room {
         order.push(this.teams['blue'][i]);
       }
     }
+    
+    // Randomize which team goes first
+    const numTeams = order.length / bound;
+    const mod = Math.floor(Math.random() * numTeams);
+    for (var i=0; i<mod; i++) {
+      order.push(order.shift());
+    }
+
     this.members = order;
   }
 
@@ -67,6 +76,44 @@ export default class Room {
    */
   setState() {
     this.state = new State(this.members[0], this.members.length);
+  }
+
+  /**
+   * Removes card from hand
+   * @param {*} name 
+   * @param {*} card 
+   */
+  removeFromHand(name, card) {
+    const i = this.members.indexOf(name);
+    this.state.removeFromHand(i, card);
+  }
+
+  /**
+   * Places a tile
+   * @param {*} teamName 
+   * @param {*} pos 
+   */
+  placeTile(teamName, pos) {
+    this.state.placeTile(teamName, pos);
+  }
+
+  /**
+   * Removes a tile
+   * @param {*} pos 
+   */
+   removeTile(pos) {
+    this.state.removeTile(pos);
+  }
+
+  /**
+   * Draws card and updates turn√
+   * @param {*} name 
+   */
+  drawCard(name) {
+    const i = this.members.indexOf(name);
+    this.state.drawCard(i);
+    
+    this.state.isTurn = this.members[[(i + 1) % this.members.length]];
   }
 
   /**
