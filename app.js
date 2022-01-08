@@ -151,7 +151,12 @@ io.on('connection', (socket) => {
     rooms[roomCode].placeTile(teamName, pos);
     io.to(roomCode).emit('game updated', rooms[roomCode].state);
 
-    // TODO: check win con. update gameStage to 'over' if true
+    // Check win con
+    const winCon = rooms[roomCode].gameWon(teamName);
+    console.log("Checking win con: " + winCon);
+    if (winCon) {
+      io.to(roomCode).emit('game end', teamName);
+    }
     
     showRoomState();
   });

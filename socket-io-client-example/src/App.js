@@ -48,6 +48,10 @@ function App() {
       console.log(`Updated state: ${JSON.stringify(state)}`);
     });
 
+    socket.on('game end', winningTeam => {
+      console.log(`Team ${winningTeam} won!`);
+    });
+
     return () => socket.disconnect();
   }, []); // IMPORTANT: DON'T ADD THE MISSING DEPENDENCIES HERE
 

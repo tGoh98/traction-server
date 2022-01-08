@@ -77,6 +77,12 @@ import { removeElem } from './util.js';
       board.push(new Tile(card));
     }
 
+    // The 4 corners are free tiles
+    board[0].marked = 'free';
+    board[9].marked = 'free';
+    board[90].marked = 'free';
+    board[99].marked = 'free';
+
     return board;
   }
 

@@ -62,8 +62,7 @@ export default class Room {
     }
     
     // Randomize which team goes first
-    const numTeams = order.length / bound;
-    const mod = Math.floor(Math.random() * numTeams);
+    const mod = Math.floor(Math.random() * this.getNumTeams());
     for (var i=0; i<mod; i++) {
       order.push(order.shift());
     }
@@ -114,6 +113,129 @@ export default class Room {
     this.state.drawCard(i);
     
     this.state.isTurn = this.members[[(i + 1) % this.members.length]];
+  }
+
+  /**
+   * Checks if the team that just went won
+   * @param {*} teamName 
+   * @returns 
+   */
+  gameWon(teamName) {
+    const over = this.checkBoardWin(teamName);
+    if (over) this.gameStage = 'over';
+    return over;
+  }
+
+  /**
+   * Checks if win condition has been satisfied
+   * @param {*} teamName 
+   * @returns 
+   */
+  checkBoardWin(teamName) {
+    const needed = this.getNumTeams() === 2 ? 2 : 1;
+    let accum = 0;
+
+    const iters = this.state.board.length / 10;
+    let horiz = this.buildArray((i, j) => i*10 + j, iters);
+    let vert = this.buildArray((i, j) => i + j*10, iters);
+    let diag = this.buildArrayDiag(this.state.board);
+    let diagReverse = this.buildArrayDiag(this.flipMat(this.state.board, 10));
+
+    accum += this.checkOneOrient(teamName, horiz);
+    accum += this.checkOneOrient(teamName, vert);
+    accum += this.checkOneOrient(teamName, diag);
+    accum += this.checkOneOrient(teamName, diagReverse);
+
+    return accum >= needed;
+  }
+
+  /**
+   * Given offsetFunc, returns array built from board
+   * @param {*} offsetFunc 
+   * @returns 
+   */
+  buildArray(offsetFunc, iters) {
+    let finalArr = [];
+    for (let i=0; i<iters; i++) {
+      let tempArr = [];
+      for (let j=0; j<iters; j++) {
+        tempArr.push(this.state.board[offsetFunc(i, j)]);
+      }
+      finalArr.push(tempArr);
+    }
+    return finalArr;
+  }
+
+  /**
+   * Build diagonal arrays is harder
+   * @returns 
+   */
+  buildArrayDiag(arr) {
+    let finalArr = [];
+    
+    for (var k=0; k<20; k++) {
+      let tempArr = [];
+      for (var j=0; j<=k; j++) {
+        const i = k - j;
+        if (i < 10 && j < 10) {
+          tempArr.push(arr[i*10 + j]);
+        }
+      }
+      finalArr.push(tempArr);
+    }
+    return finalArr;
+  }
+
+  /**
+   * Reverse 1d matrix for reverse diagonal iteration
+   * @param {*} arr 
+   * @param {*} axis 
+   */
+  flipMat(arr, axis) {
+    let finalArr = [];
+    for (var i=0; i<axis; i++) {
+      let tempArr = [];
+      for (var j=0; j<axis; j++) {
+        tempArr.push(arr[i*axis+j]);
+      }
+      tempArr.reverse();
+      finalArr = finalArr.concat(tempArr);
+    }
+    return finalArr;
+  }
+
+  /**
+   * Gets number of completed sequences for a list of lists
+   * @param {*} teamName 
+   * @param {*} arrs 
+   * @returns 
+   */
+  checkOneOrient(teamName, arrs) {
+    let totalSequences = 0;
+    for (const arr of arrs) {
+      // Only need to check diags where length >= 5
+      if (arr.length < 5) continue;
+
+      let maxSeq = 0;
+      let curSeq = 0;
+      for (const tile of arr) {
+        if (tile.marked === teamName || tile.marked === 'free') curSeq++;
+        else curSeq = 0;
+        maxSeq = Math.max(curSeq, maxSeq);
+      }
+      totalSequences += Math.floor(maxSeq / 5);
+    }
+
+    return totalSequences;
+  }
+
+  /**
+   * Calculates the number of teams (there can be 2 or 3)
+   * @returns 
+   */
+  getNumTeams() {
+    let bound = Math.max(this.teams['red'].length, this.teams['green'].length);
+    return this.members.length / bound;
   }
 
   /**
